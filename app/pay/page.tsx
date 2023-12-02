@@ -38,7 +38,7 @@ function App() {
             safeAddress
         })
 
-        const relayKit = new GelatoRelayPack({ apiKey: 'RmD_djEcaOK0yunxFnxFAwO6vpljna_6U0Yxp_SBFJ0_', protocolKit })
+        const relayKit = new GelatoRelayPack({ apiKey: '', protocolKit })
         const safeTransaction = await relayKit.createRelayedTransaction({
             transactions,
             options

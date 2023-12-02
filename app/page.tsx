@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 import { SafeAuthPack, SafeAuthInitOptions, AuthKitSignInData } from "@safe-global/auth-kit";
 import Safe, { EthersAdapter, SafeFactory } from "@safe-global/protocol-kit";
 import { ethers, BrowserProvider, Eip1193Provider } from "ethers";
-
+import { GelatoRelayPack } from '@safe-global/relay-kit'
 import "./App.css";
 import RPC from "./web3RPC"; // for using web3.js
 // import RPC from "./ethersRPC"; // for using ethers.js
+import { MetaTransactionData, MetaTransactionOptions } from '@safe-global/safe-core-sdk-types'
 
 function App() {
   const [safeAuth, setSafeAuth] = useState<SafeAuthPack>();
@@ -147,6 +148,17 @@ function App() {
     // Wrap Web3Auth provider with ethers
     const provider = new BrowserProvider(safeAuth?.getProvider() as Eip1193Provider);
     const signer = await provider.getSigner();
+    const destinationAddress = '0xa5C44F8c2245B83C9f5a38adf20c1beA48743614'
+    const withdrawAmount = ethers.parseUnits('0', 'ether').toString()
+    const options: MetaTransactionOptions = {
+      isSponsored: true
+    }
+    // Create a transactions array with one transaction object
+    const transactions: MetaTransactionData[] = [{
+      to: destinationAddress,
+      data: '0x',
+      value: withdrawAmount
+    }]
     const ethAdapter = new EthersAdapter({
       ethers,
       signerOrProvider: signer,
@@ -155,24 +167,37 @@ function App() {
       safeAddress,
       ethAdapter,
     });
+    console.log(protocolKit)
+    const relayKit = new GelatoRelayPack({ apiKey: '', protocolKit })
+    const safeTransaction = await relayKit.createRelayedTransaction({
+      transactions,
+      options
+    })
+    console.log('RELAY', relayKit);
 
-    // Create transaction
-    let tx = await protocolKit.createTransaction({
-      transactions: [
-        {
-          to: ethers.getAddress(safeAuthSignInResponse?.eoa || "0x"),
-          data: "0x",
-          value: ethers.parseUnits("0.0001", "ether").toString(),
-        },
-      ],
-    });
+    console.log('SAFE TRANS', safeTransaction);
+    const signedSafeTransaction = await protocolKit.signTransaction(safeTransaction)
+    console.log('SIGNED', signedSafeTransaction);
+    const response = await relayKit.executeRelayTransaction(signedSafeTransaction, options)
 
-    // Sign transaction
-    tx = await protocolKit.signTransaction(tx);
+    console.log(`Relay Transaction Task ID: https://relay.gelato.digital/tasks/status/${response.taskId}`)
+    // // Create transaction
+    // let tx = await protocolKit.createTransaction({
+    //   transactions: [
+    //     {
+    //       to: ethers.getAddress(safeAuthSignInResponse?.eoa || "0x"),
+    //       data: "0x",
+    //       value: ethers.parseUnits("0.0001", "ether").toString(),
+    //     },
+    //   ],
+    // });
 
-    // Execute transaction
-    const txResult = await protocolKit.executeTransaction(tx);
-    uiConsole("Safe Transaction Result", txResult);
+    // // Sign transaction
+    // tx = await protocolKit.signTransaction(tx);
+
+    // // Execute transaction
+    // const txResult = await protocolKit.executeTransaction(tx);
+    // uiConsole("Safe Transaction Result", txResult);
   };
 
   function uiConsole(...args: any[]): void {
