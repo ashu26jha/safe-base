@@ -168,7 +168,7 @@ function App() {
       ethAdapter,
     });
     console.log(protocolKit)
-    const relayKit = new GelatoRelayPack({ apiKey: '', protocolKit })
+    const relayKit = new GelatoRelayPack({ apiKey: process.env.NEXT_PUBLIC_1BALANCE_API_KEY, protocolKit })
     const safeTransaction = await relayKit.createRelayedTransaction({
       transactions,
       options
@@ -181,23 +181,6 @@ function App() {
     const response = await relayKit.executeRelayTransaction(signedSafeTransaction, options)
 
     console.log(`Relay Transaction Task ID: https://relay.gelato.digital/tasks/status/${response.taskId}`)
-    // // Create transaction
-    // let tx = await protocolKit.createTransaction({
-    //   transactions: [
-    //     {
-    //       to: ethers.getAddress(safeAuthSignInResponse?.eoa || "0x"),
-    //       data: "0x",
-    //       value: ethers.parseUnits("0.0001", "ether").toString(),
-    //     },
-    //   ],
-    // });
-
-    // // Sign transaction
-    // tx = await protocolKit.signTransaction(tx);
-
-    // // Execute transaction
-    // const txResult = await protocolKit.executeTransaction(tx);
-    // uiConsole("Safe Transaction Result", txResult);
   };
 
   function uiConsole(...args: any[]): void {
