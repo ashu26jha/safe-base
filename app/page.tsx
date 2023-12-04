@@ -1,13 +1,39 @@
 'use client';
 import { useEffect, useState } from "react";
 import { SafeAuthPack, SafeAuthInitOptions, AuthKitSignInData } from "@safe-global/auth-kit";
-import Safe, { EthersAdapter, SafeFactory } from "@safe-global/protocol-kit";
+import Safe, { CreateTransactionProps, EthersAdapter, SafeFactory } from "@safe-global/protocol-kit";
 import { ethers, BrowserProvider, Eip1193Provider } from "ethers";
 import { GelatoRelayPack } from '@safe-global/relay-kit'
 import "./App.css";
 import RPC from "./web3RPC"; // for using web3.js
-// import RPC from "./ethersRPC"; // for using ethers.js
-import { MetaTransactionData, MetaTransactionOptions } from '@safe-global/safe-core-sdk-types'
+import { MetaTransactionData, MetaTransactionOptions, SafeTransaction } from '@safe-global/safe-core-sdk-types'
+import { Signer } from "@xmtp/xmtp-js";
+
+class EIP4337SignerAdapter implements Signer {
+  private eip4337Wallet: Safe;
+
+  constructor(eip4337Wallet: Safe) {
+    this.eip4337Wallet = eip4337Wallet;
+  }
+
+  async getAddress(): Promise<string> {
+    const account = await this.eip4337Wallet.getAddress();
+    return account;
+  }
+
+  async signMessage(message: ArrayLike<number> | string): Promise<string> {
+    const Metatransactions: MetaTransactionData[] = [];
+    const testClass: CreateTransactionProps = {
+      transactions: Metatransactions
+    }
+    // const safeTransaction: SafeTransaction =  await this.eip4337Wallet.createTransaction(testClass)
+    // const signature: SafeTransaction = await this.eip4337Wallet.signTransaction(safeTransaction,"eth_sign");
+    // const test = ((signature.signatures).keys).toString();
+    console.log("test")
+    return "test";
+  }
+}
+
 
 function App() {
   const [safeAuth, setSafeAuth] = useState<SafeAuthPack>();
@@ -74,7 +100,7 @@ function App() {
   };
 
   const createSafe = async () => {
-    // Currently, createSafe is not supported by SafeAuthKit.
+
     const provider = new BrowserProvider(safeAuth?.getProvider() as Eip1193Provider);
     const signer = await provider.getSigner();
     const ethAdapter = new EthersAdapter({
@@ -142,12 +168,32 @@ function App() {
     uiConsole(signedMessage);
   };
 
+  const test = async () => {
+    const safeAddress = safeAuthSignInResponse?.safes?.[0] || "0x";
+    const provider = new BrowserProvider(safeAuth?.getProvider() as Eip1193Provider);
+    const signer = await provider.getSigner();
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signerOrProvider: signer,
+    });
+    const protocolKit = await Safe.create({
+      safeAddress,
+      ethAdapter,
+    });
+
+    const hello: EIP4337SignerAdapter = new EIP4337SignerAdapter(protocolKit);
+    hello.signMessage("Hello XMTP CHAL JANA")
+
+  }
+
   const signAndExecuteSafeTx = async () => {
     const safeAddress = safeAuthSignInResponse?.safes?.[0] || "0x";
 
     // Wrap Web3Auth provider with ethers
     const provider = new BrowserProvider(safeAuth?.getProvider() as Eip1193Provider);
     const signer = await provider.getSigner();
+    // GOT EOAs signer
+
     const destinationAddress = '0xa5C44F8c2245B83C9f5a38adf20c1beA48743614'
     const withdrawAmount = ethers.parseUnits('0', 'ether').toString()
     const options: MetaTransactionOptions = {
@@ -241,6 +287,11 @@ function App() {
             <div>
               <button onClick={logout} className="card">
                 Log Out
+              </button>
+            </div>
+            <div>
+              <button onClick={test} className="card">
+                TEST
               </button>
             </div>
           </>
