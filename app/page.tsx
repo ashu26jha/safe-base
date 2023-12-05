@@ -7,32 +7,10 @@ import { GelatoRelayPack } from '@safe-global/relay-kit'
 import "./App.css";
 import RPC from "./web3RPC"; // for using web3.js
 import { MetaTransactionData, MetaTransactionOptions, SafeTransaction } from '@safe-global/safe-core-sdk-types'
-import { Signer } from "@xmtp/xmtp-js";
+import { Client, Signer } from "@xmtp/xmtp-js";
+import { Wallet } from "ethers";
 
-class EIP4337SignerAdapter implements Signer {
-  private eip4337Wallet: Safe;
 
-  constructor(eip4337Wallet: Safe) {
-    this.eip4337Wallet = eip4337Wallet;
-  }
-
-  async getAddress(): Promise<string> {
-    const account = await this.eip4337Wallet.getAddress();
-    return account;
-  }
-
-  async signMessage(message: ArrayLike<number> | string): Promise<string> {
-    const Metatransactions: MetaTransactionData[] = [];
-    const testClass: CreateTransactionProps = {
-      transactions: Metatransactions
-    }
-    // const safeTransaction: SafeTransaction =  await this.eip4337Wallet.createTransaction(testClass)
-    // const signature: SafeTransaction = await this.eip4337Wallet.signTransaction(safeTransaction,"eth_sign");
-    // const test = ((signature.signatures).keys).toString();
-    console.log("test")
-    return "test";
-  }
-}
 
 
 function App() {
@@ -181,9 +159,30 @@ function App() {
       ethAdapter,
     });
 
-    const hello: EIP4337SignerAdapter = new EIP4337SignerAdapter(protocolKit);
-    hello.signMessage("Hello XMTP CHAL JANA")
+    class EIP4337SignerAdapter implements Signer {
+      private eip4337Wallet: Safe;
+    
+      constructor(eip4337Wallet: Safe) {
+        this.eip4337Wallet = eip4337Wallet;
+      }
+    
+      async getAddress(): Promise<string> {
+        const account = await this.eip4337Wallet.getAddress();
+        return account;
+      }
+      async signMessage(message: ArrayLike<number> | string): Promise<string> {
+        return await ethAdapter.signMessage(message.toString())
+      }
+    }
 
+    const hello: EIP4337SignerAdapter = new EIP4337SignerAdapter(protocolKit);
+    console.log("Trying to create")
+    try {
+      let xmtp = await Client.create(hello, { env: "dev" });
+    }
+    catch(e){
+      console.log(e);
+    }
   }
 
   const signAndExecuteSafeTx = async () => {
@@ -209,6 +208,7 @@ function App() {
       ethers,
       signerOrProvider: signer,
     });
+    
     const protocolKit = await Safe.create({
       safeAddress,
       ethAdapter,
