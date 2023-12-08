@@ -1,3 +1,3 @@
+Check `safeTest` to see how interaction with a safe accounts take place
 
-
-Make your `.env.local.sample` to `.env.local` and fill in the require API KEY
+Make sure to have ABI, address. Then use relayed transaction for gasless experience
