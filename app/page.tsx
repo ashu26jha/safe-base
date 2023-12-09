@@ -80,11 +80,17 @@ function App() {
       signerOrProvider: signer,
     } as any);
 
+
+
     console.log(safeAuthSignInResponse);
 
     const safeFactory = await SafeFactory.create({ ethAdapter });
     const safe: Safe = await safeFactory.deploySafe({
-      safeAccountConfig: { threshold: 1, owners: [safeAuthSignInResponse?.eoa as string] },
+      safeAccountConfig: { 
+        threshold: 1, 
+        owners: [safeAuthSignInResponse?.eoa as string],
+        fallbackHandler:'0xf7d2AEC4bd5bAF8c032a2c9ee9D3a71c79Fe92E0'
+      },
     });
     console.log("SAFE Created!", await safe.getAddress());
     uiConsole("SAFE Created!", await safe.getAddress());
@@ -192,8 +198,7 @@ function App() {
   const loggedInView = (
     <>
       <div className="flex-container">
-        {!safeAuthSignInResponse?.safes?.length ? (
-          <>
+                   <>
             <div>
               <button onClick={createSafe} className="card">
                 Create Safe
@@ -205,7 +210,7 @@ function App() {
               </button>
             </div>
           </>
-        ) : (
+      
           <>
             <div>
               <button onClick={getAccounts} className="card">
@@ -239,7 +244,7 @@ function App() {
             </div>
 
           </>
-        )}
+      
       </div>
       <div id="console" style={{ whiteSpace: "pre-line" }}>
         <p style={{ whiteSpace: "pre-line" }}></p>

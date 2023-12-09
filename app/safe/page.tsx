@@ -1,11 +1,24 @@
 'use client';
 import { useEffect, useState } from "react";
+import { ZeroAddress, EventLog } from "ethers";
+
 import { SafeAuthPack, SafeAuthInitOptions, AuthKitSignInData } from "@safe-global/auth-kit";
 import Safe, { EthersAdapter, SafeFactory } from "@safe-global/protocol-kit";
 import { ethers, BrowserProvider, Eip1193Provider } from "ethers";
 import { GelatoRelayPack } from '@safe-global/relay-kit';
 import increamentABI from "../../increamentABI";
-// const { signer } = useWeb3ModalSigner();
+import { enablePlugin } from "../plugin-helpers/logic/plugins";
+import { getManager } from "../plugin-helpers/logic/protocol";
+import { getSafeInfo, submitTxs } from "../plugin-helpers/logic/safeapp";
+import SafeAppsSDK, { BaseTransaction } from '@safe-global/safe-apps-sdk';
+
+
+import { isModuleEnabled, buildEnableModule } from "../plugin-helpers/logic/safe";
+const SENTINEL_MODULES = "0x0000000000000000000000000000000000000001"
+import managerABI from '../../managerABI';
+
+
+// const { sigr } = useWeb3ModalSigner();
 
 import "../App.css";
 import RPC from "../web3RPC";
@@ -66,7 +79,7 @@ function App() {
     setUserInfo(userInfo || undefined);
     setProvider(safeAuth.getProvider() as Eip1193Provider);
   };
-  
+
   const getChainId = async () => {
     if (!provider) {
       uiConsole("provider not initialized yet");
@@ -154,7 +167,7 @@ function App() {
       el.innerHTML = JSON.stringify(args || {}, null, 2);
     }
   }
-  async function safeTest () {
+  async function safeTest() {
     const safeAddress = safeAuthSignInResponse?.safes?.[0] || "0x";
 
     const provider = new BrowserProvider(safeAuth?.getProvider() as Eip1193Provider);
@@ -165,8 +178,8 @@ function App() {
     const increamentAddress = '0xF1779F296F703083d86a9F765Ff005355157569c';
 
     let iface = new ethers.Interface(increamentABI);
-    const encodedData = iface.encodeFunctionData("increament",[]);
-    console.log('HASH',encodedData.toString());
+    const encodedData = iface.encodeFunctionData("increament", []);
+    console.log('HASH', encodedData.toString());
 
     const transactions: MetaTransactionData[] = [{
       to: increamentAddress,
@@ -197,6 +210,132 @@ function App() {
     console.log(response)
   }
 
+  async function enablePlugin() {
+
+    const plugin = '0x16eCb7d5E76A1B0DfD54A9BE9293c35866CD6674';
+    const requiresRootAccess = false;
+    const safeAddress = '0x21E222960b22b60b3b0301D744984998DEf9A505';
+    // NEW safeAddress = '0x21E222960b22b60b3b0301D744984998DEf9A505'
+    const manager = await getManager();
+    console.log(manager)
+    const managerAddress = '0xf7d2AEC4bd5bAF8c032a2c9ee9D3a71c79Fe92E0'
+    console.log(managerAddress);
+
+    const provider = new BrowserProvider(safeAuth?.getProvider() as Eip1193Provider);
+    const signer = await provider.getSigner();
+
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signerOrProvider: signer || provider,
+    });
+
+    const protocolKit = await Safe.create({
+      ethAdapter,
+      safeAddress,
+    });
+
+    if (!(await isModuleEnabled(safeAddress, managerAddress))) {
+      console.log("ENABLING");
+      const tx = await protocolKit.createEnableModuleTx(managerAddress);
+      const txHash = await protocolKit.getTransactionHash(tx);
+      console.log("Approving");
+      const approveTxResponse = await protocolKit.approveTransactionHash(txHash)
+      await approveTxResponse.transactionResponse?.wait()
+      const executeTxResponse = await protocolKit.executeTransaction(tx);
+      console.log('TX RESPONSE',executeTxResponse);
+      await executeTxResponse.transactionResponse?.wait()
+    }
+    else {
+      console.log('Module already enabled')
+    }
+
+    const manager1 = new ethers.Contract(managerAddress, managerABI, signer);
+    const enablePluginParameters = await manager1.getFunction("enablePlugin").populateTransaction(plugin, false);
+    console.log("DATA ", enablePluginParameters.data);
+
+    const enablePluginTxData: MetaTransactionData = {
+      to: safeAddress,
+      value: '0',
+      data: enablePluginParameters.data,
+    }
+
+
+    const enablePluginTx = await protocolKit.createTransaction({
+      transactions: [enablePluginTxData]
+    });
+    console.log(1);
+    const signedTx = await protocolKit.signTransaction(enablePluginTx);
+  
+    console.log("God pls help")
+
+    const executePluginTxResponse = await protocolKit.executeTransaction(signedTx)
+    await executePluginTxResponse.transactionResponse?.wait();
+    console.log("TX RESPONSE",executePluginTxResponse)
+
+    // let iface = new ethers.Interface(managerABI);
+    // const encodedData = iface.encodeFunctionData("enablePlugin", [plugin, requiresRootAccess]);
+    // console.log('HASH2: ', encodedData.toString());
+
+    // const safeTransactionData: MetaTransactionData = {
+    //   to: '0x562130Bb4874c92542A8f92e7f394b714217B4D0',
+    //   value: '0',
+    //   data: encodedData.toString()
+    // }
+
+    // const options = {
+    //   gas: "6000000",
+    //   gasPrice: "60000000000",
+
+    // }
+
+    // const safeTransaction = await protocolKit.createTransaction({
+    //   transactions: [safeTransactionData],
+    //   options
+    // });
+    // console.log("Signing...");
+    // const tx = await protocolKit.signTransaction(safeTransaction);
+    // console.log("Performing transaction", tx)
+    // const txResult = await protocolKit.executeTransaction(tx);
+    // console.log(txResult);
+
+    // }
+    // const getSafeSdk = async (safeAddress: string) => {
+    //   const provider = new BrowserProvider(safeAuth?.getProvider() as Eip1193Provider);
+    //   const signer = await provider.getSigner();
+
+    //   const ethAdapter = new EthersAdapter({
+    //     ethers,
+    //     signerOrProvider: signer,
+    //   });
+
+    //   const safeSdk = await Safe.create({ ethAdapter, safeAddress })
+    //   return safeSdk
+  }
+  async function hello() {
+    console.log(await isPluginEnabled());
+  }
+
+  const isPluginEnabled = async () => {
+
+    const manager = await getManager();
+    const plugin = '0x16eCb7d5E76A1B0DfD54A9BE9293c35866CD6674';
+    // const safeInfo = await getSafeInfo()
+    const safeAddress = safeAuthSignInResponse?.safes?.[0] || "0x";
+
+    // const manager = await getManager()
+    // const safeInfo = await getSafeInfo()
+    const pluginInfo = await manager.enabledPlugins(safeAddress, plugin);
+    return pluginInfo.nextPluginPointer !== ZeroAddress
+  }
+
+  const buildEnablePlugin = async (plugin: string, requiresRootAccess: boolean): Promise<BaseTransaction> => {
+    const manager = await getManager()
+    return {
+      to: await manager.getAddress(),
+      value: "0",
+      data: (await manager.enablePlugin.populateTransaction(plugin, requiresRootAccess)).data
+    }
+  }
   const loggedInView = (
     <>
       <div className="flex-container">
@@ -234,6 +373,12 @@ function App() {
         )}
       </div>
       <div id="console" style={{ whiteSpace: "pre-line" }}>
+        <button onClick={hello}>
+          Is enabled?
+        </button>
+        <button onClick={enablePlugin}>
+          ENABLE THIS
+        </button>
         <p style={{ whiteSpace: "pre-line" }}></p>
       </div>
     </>
@@ -242,11 +387,11 @@ function App() {
   const unloggedInView = (
     <div>
 
-    
-    
-    <button onClick={login} className="card">
-      Login
-    </button>
+
+
+      <button onClick={login} className="card">
+        Login
+      </button>
     </div>
   );
 
@@ -267,6 +412,7 @@ function App() {
 
       <div className="grid">{provider ? userInfo?.name ? <p>Welcome {userInfo?.name}!</p> : null : null} </div>
       <div className="grid">
+
         {provider ? (
           safeAuthSignInResponse?.eoa ? (
             <p>
