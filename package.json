@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@material-tailwind/react": "^2.1.5",
+    "@react-email/render": "^0.0.10",
     "@safe-global/auth-kit": "^2.0.0-alpha.10",
     "@safe-global/protocol-kit": "^2.0.0",
     "@safe-global/relay-kit": "^2.0.0",
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/nodemailer": "^6.4.14",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
