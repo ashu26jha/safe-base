@@ -5,8 +5,7 @@ import Safe, { EthersAdapter, SafeFactory } from "@safe-global/protocol-kit";
 import { ethers, BrowserProvider, Eip1193Provider } from "ethers";
 import { GelatoRelayPack } from '@safe-global/relay-kit'
 import "./app.css";
-import RPC from "./web3RPC"; // for using web3.js
-// import RPC from "./ethersRPC"; // for using ethers.js
+import RPC from "./web3RPC"; 
 import { MetaTransactionData, MetaTransactionOptions } from '@safe-global/safe-core-sdk-types'
 function App() {
   const [safeAuth, setSafeAuth] = useState<SafeAuthPack>();
@@ -238,6 +237,7 @@ function App() {
                 Log Out
               </button>
             </div>
+
           </>
         )}
       </div>
@@ -293,16 +293,6 @@ function App() {
           )
         ) : null}
       </div>
-
-      {/* <footer className="footer">
-        <a
-          href="https://github.com/Web3Auth/web3auth-pnp-examples/tree/main/web-modal-sdk/account-abstraction/web3auth-safe-example"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Source code
-        </a>
-      </footer> */}
     </div>
   );
 }
