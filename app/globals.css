@@ -165,3 +165,8 @@ label {
 .submit-button:hover {
   background-color: #2f855a;
 }
+.notlogin{
+  display: flex;
+  flex-direction: row;
+  color: white;
+}
