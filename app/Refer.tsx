@@ -10,7 +10,7 @@ const ReferButton = () => {
         setShowPopup((prevShowPopup) => !prevShowPopup);
     };
 
-    const handleRefer = () => {
+    const handleSend = () => {
         console.log('Referring with Password:', password, 'and Tokens:', tokens);
         setPassword('');
         setTokens('');
@@ -52,8 +52,8 @@ const ReferButton = () => {
                             className="input-field"
                         />
 
-                        <button onClick={handleRefer} className="submit-button">
-                            Refer Now
+                        <button onClick={handleSend} className="submit-button">
+                            Send Gift
                         </button>
 
                         <button onClick={handleClosePopup} className="close-button">
