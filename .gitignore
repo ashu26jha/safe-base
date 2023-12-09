@@ -5,5 +5,5 @@
 /.pnp
 .pnp.js
 /.next
-.env.local
+.env
 

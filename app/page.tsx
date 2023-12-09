@@ -4,11 +4,10 @@ import { SafeAuthPack, SafeAuthInitOptions, AuthKitSignInData } from "@safe-glob
 import Safe, { EthersAdapter, SafeFactory } from "@safe-global/protocol-kit";
 import { ethers, BrowserProvider, Eip1193Provider } from "ethers";
 import { GelatoRelayPack } from '@safe-global/relay-kit'
-import "./App.css";
+import "./app.css";
 import RPC from "./web3RPC"; // for using web3.js
 // import RPC from "./ethersRPC"; // for using ethers.js
 import { MetaTransactionData, MetaTransactionOptions } from '@safe-global/safe-core-sdk-types'
-
 function App() {
   const [safeAuth, setSafeAuth] = useState<SafeAuthPack>();
   const [userInfo, setUserInfo] = useState<any>();
@@ -109,7 +108,7 @@ function App() {
     }
     const rpc = new RPC(provider);
     const address = await rpc.getAccounts();
-    uiConsole(address);
+    uiConsole("Address: ",address);
   };
 
   const getBalance = async () => {
@@ -119,7 +118,7 @@ function App() {
     }
     const rpc = new RPC(provider);
     const balance = await rpc.getBalance();
-    uiConsole(balance);
+    uiConsole("Balance: ",balance);
   };
 
   const sendTransaction = async () => {
@@ -183,10 +182,11 @@ function App() {
     console.log(`Relay Transaction Task ID: https://relay.gelato.digital/tasks/status/${response.taskId}`)
   };
 
-  function uiConsole(...args: any[]): void {
+  function uiConsole(...args: any[]): void{
     const el = document.querySelector("#console>p");
     if (el) {
-      el.innerHTML = JSON.stringify(args || {}, null, 2);
+      const formattedString = args.map(arg => arg.toString()).join(' ');
+      el.textContent = formattedString;
     }
   }
 
@@ -208,11 +208,6 @@ function App() {
           </>
         ) : (
           <>
-            <div>
-              <button onClick={getChainId} className="card">
-                Get Chain ID
-              </button>
-            </div>
             <div>
               <button onClick={getAccounts} className="card">
                 Get Accounts
@@ -260,26 +255,15 @@ function App() {
 
   return (
     <div className="container">
-      <h1 className="title">
-        <a target="_blank" href="https://web3auth.io/docs/sdk/pnp/web/modal" rel="noreferrer">
-          Web3Auth{" "}
-        </a>
-        &{" "}
-        <a target="_blank" href="https://docs.safe.global/safe-core-aa-sdk/auth-kit/reference" rel="noreferrer">
-          Safe Auth Kit
-        </a>{" "}
-        Example
-      </h1>
-
       <div className="grid">{provider ? loggedInView : unloggedInView}</div>
 
-      <div className="grid">{provider ? userInfo?.name ? <p>Welcome {userInfo?.name}!</p> : null : null} </div>
+      <div className="grid">{provider ? userInfo?.name ? <p style={{fontSize:'30px'}}>Welcome {userInfo?.name}!</p> : null : null} </div>
       <div className="grid">
         {provider ? (
           safeAuthSignInResponse?.eoa ? (
             <p>
               Your EOA:{" "}
-              <a href={`https://goerli.etherscan.io/address/${safeAuthSignInResponse?.eoa}`} target="_blank" rel="noreferrer">
+              <a href={`https://goerli.etherscan.io/address/${safeAuthSignInResponse?.eoa}`} target="_blank" rel="noreferrer" style={{color:'white'}}>
                 {safeAuthSignInResponse?.eoa}
               </a>
             </p>
@@ -293,8 +277,8 @@ function App() {
               <p>Your Safe Accounts</p>
               {safeAuthSignInResponse?.safes?.map((safe: any, index: any) => (
                 <p key={index}>
-                  Safe[{index}]:{" "}
-                  <a href={`https://goerli.etherscan.io/address/${safe}`} target="_blank" rel="noreferrer">
+                  Safe:{" "}
+                  <a href={`https://goerli.etherscan.io/address/${safe}`} target="_blank" rel="noreferrer" style={{color:'white'}}>
                     {safe}
                   </a>
                 </p>
@@ -310,7 +294,7 @@ function App() {
         ) : null}
       </div>
 
-      <footer className="footer">
+      {/* <footer className="footer">
         <a
           href="https://github.com/Web3Auth/web3auth-pnp-examples/tree/main/web-modal-sdk/account-abstraction/web3auth-safe-example"
           target="_blank"
@@ -318,7 +302,7 @@ function App() {
         >
           Source code
         </a>
-      </footer>
+      </footer> */}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 .container {
 	width: 80%;
-	margin: auto;
+	margin: 2rem auto;
 	padding: 0 2rem;
 }
 
@@ -30,19 +30,26 @@
 	display: flex;
 	align-items: center;
 	flex-direction: column;
+	color: white;
 }
 
 .card {
-	margin: 0.5rem;
-	padding: 0.7rem;
-	text-align: center;
-	color: #0070f3;
-	background-color: #fafafa;
-	text-decoration: none;
-	border: 1px solid #0070f3;
-	border-radius: 10px;
-	transition: color 0.15s ease, border-color 0.15s ease;
-	width: 100%;
+	display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 17px;
+    width: 7rem;
+    height: 3rem;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: 30px;
+	color: #ffffff;
+    border: none;
+	background: linear-gradient(to right, #0070f3, #00c2ff);
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
 }
 
 .card:hover,
@@ -50,6 +57,8 @@
 .card:active {
 	cursor: pointer;
 	background-color: #f1f1f1;
+	color: black;
+	border: 1px solid white;
 }
 
 .footer {
@@ -85,7 +94,7 @@
 	flex-flow: row wrap;
 }
 
-.flex-container > div {
+.flex-container>div {
 	width: 100px;
 	margin: 10px;
 	text-align: center;
