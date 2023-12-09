@@ -5,6 +5,7 @@ const ReferButton = () => {
     const [showPopup, setShowPopup] = useState(false);
     const [password, setPassword] = useState('');
     const [tokens, setTokens] = useState('');
+    const [email, setEmail] = useState('');
 
     const handleTogglePopup = () => {
         setShowPopup((prevShowPopup) => !prevShowPopup);
@@ -40,7 +41,8 @@ const ReferButton = () => {
                          <label>Email:</label>
                         <input
                             type="email"
-                            onChange={(e) => setPassword(e.target.value)}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             className="input-field"
                         />
 
