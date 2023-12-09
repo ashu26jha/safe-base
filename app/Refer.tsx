@@ -58,7 +58,7 @@ const ReferButton = () => {
                             Send Gift
                         </button>
 
-                        <button onClick={handleClosePopup} className="close-button">
+                        <button onClick={handleClosePopup} className="refer-button">
                             Close
                         </button>
                     </div>
